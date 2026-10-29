@@ -1,136 +1,64 @@
-# Trabajo práctico 08
+# TP09 - Reservas de salas de estudio
 
-Endpoints persistentes de reservas de salas de estudio. Sitio HTML y API JSON con MongoDB Atlas y Mongoose.
+## 1. De dónde partí
 
-## 1. Origen de la copia
+Para hacer este trabajo usé como base mi TP08 y lo copié en una carpeta nueva llamada `tp-09-salas-crud-mongodb`. De esa manera pude seguir trabajando sin modificar la entrega anterior.
 
-Para hacer este trabajo, partí de mi TP 07 (`tp-07-salas-mongodb`) y trabajé sobre una copia llamada `tp-08-salas-http-mongodb`. De esta manera, conservé el práctico anterior sin modificarlo.
+## 2. Entorno utilizado
 
-El objetivo fue que las reservas se guardaran en MongoDB Atlas y no solamente en la memoria del servidor. También incorporé una API para consultar y crear reservas desde Postman.
-
-## 2. Versiones y entorno
-
-- Node.js: v24.19.0.
-- Express: 5.2.1.
-- Mongoose: 9.11.1.
+- Node.js: v24.19.0
+- Express y Mongoose: versiones instaladas en el proyecto.
 - Base de datos: MongoDB Atlas.
-- Base utilizada: `reservas_salas_u8`.
+- Base: `reservas_salas_u9`.
 - Colección: `reservas`.
 
-## 3. Configuración de Atlas
+Los datos para conectarme a la base están en el archivo `.env`, que no se incluye en la entrega.
 
-Configuré la conexión con MongoDB Atlas mediante las variables de entorno. El archivo `.env.example` sirve como ejemplo para preparar el archivo `.env`, donde se colocan los datos reales de conexión.
+## 3. Cómo ejecutar el proyecto
 
-El archivo `.env` no se entrega ni se publica en GitHub porque contiene información privada.
+Primero hay que instalar las dependencias con:
 
-En `src/config/base-datos.js` también se conserva la configuración de DNS utilizada para resolver los problemas de conexión que se habían presentado.
+`npm install`
 
-## 4. Instalación y ejecución
+Después, iniciar el servidor con:
 
-Para instalar las dependencias:
+`npm run start:local`
 
-```bash
-npm install
-```
+Para comprobar la conexión con MongoDB también está disponible el script:
 
-Para iniciar el servidor:
+`node --env-file=.env scripts/comprobar-conexion.js`
 
-```bash
-npm run start:local
-```
+## 4. Qué hice en este TP
 
-Para comprobar la conexión con la base de datos:
+En el TP08 ya podía crear y consultar reservas. En este trabajo agregué las opciones para modificarlas y eliminarlas.
 
-```bash
-node --env-file=.env scripts/comprobar-conexion.js
-```
+- **GET:** permite consultar las reservas.
+- **POST:** permite crear una reserva nueva.
+- **PUT:** permite reemplazar todos los datos de una reserva.
+- **PATCH:** permite cambiar solamente la cantidad de personas o el estado.
+- **DELETE:** permite eliminar una reserva.
 
-Para revisar el formato y la calidad del código:
+Para probar estas funciones utilicé Postman y trabajé con la base de datos de MongoDB Atlas.
 
-```bash
-npm run format
-npm run check
-```
+## 5. Validaciones
 
-## 5. Organización del proyecto
+También probé qué pasa cuando se envían datos incorrectos. Por ejemplo, si falta un campo obligatorio en PUT o se intenta modificar un campo que no está permitido en PATCH, el servidor rechaza la solicitud.
 
-Separé el código en distintos archivos para organizar mejor las tareas:
+La cantidad de personas debe estar entre 1 y 6, y el estado solo puede ser `pendiente` o `confirmada`.
 
-- `src/index.js`: inicia la aplicación.
-- `src/app.js`: configura Express y conecta las rutas y los middleware.
-- `src/config/`: contiene la configuración y la conexión con MongoDB.
-- `src/rutas/`: separa las rutas del sitio web y las de la API.
-- `src/controladores/`: prepara las respuestas.
-- `src/servicios/reservas-mongo.js`: realiza las operaciones con las reservas.
-- `src/modelos/reserva.js`: define la estructura de las reservas con Mongoose.
-- `src/middleware/`: contiene componentes que intervienen durante las solicitudes.
-- `views/`: contiene las páginas HTML.
-- `public/`: contiene los archivos estáticos, como el CSS.
-- `scripts/`: contiene programas para comprobar la conexión y trabajar con la base de datos desde la terminal.
+Además, si se intenta consultar o modificar una reserva que no existe, el servidor devuelve el error correspondiente.
 
-La idea de esta organización es que cada parte tenga una responsabilidad. Las rutas reciben las solicitudes, los controladores coordinan las respuestas y el servicio se encarga de trabajar con los datos.
+## 6. Pruebas
 
-## 6. Endpoints de la API
+Durante las pruebas comprobé la creación de reservas, las consultas, los cambios con PUT y PATCH y el rechazo de datos incorrectos.
 
-La API permite trabajar con las reservas desde Postman, sin necesidad de utilizar el formulario de la página web.
 
-| Método | Función |
-|---|---|
-| `GET /api/reservas` | Lista las reservas. |
-| `GET /api/reservas?sala=Sala%20Norte` | Filtra por sala. |
-| `GET /api/reservas/:id` | Busca una reserva por su identificador. |
-| `POST /api/reservas` | Crea una reserva. |
 
-Las respuestas contemplan distintos códigos HTTP: `200` cuando la consulta es correcta, `201` cuando se crea una reserva, `400` cuando los datos son inválidos, `404` cuando no se encuentra una reserva y `500` cuando ocurre un error inesperado del servidor.
+## 7. Qué pasa cuando se elimina una reserva
 
-## 7. Pruebas realizadas
+La eliminación es definitiva: el documento se borra de la colección de MongoDB. Si después se intenta consultar esa reserva por su ID, ya no debería aparecer y el servidor debe responder con un 404.
 
-Utilicé Postman para comprobar las operaciones de la API y verificar las respuestas.
+## 8. Conclusión
 
-Las pruebas incluyen:
+En este trabajo seguí trabajando sobre el TP08 y agregué las funciones para modificar y eliminar reservas. También hice pruebas para comprobar que los datos se guarden en MongoDB y que el servidor rechace las solicitudes incorrectas.
 
-- Listar las reservas.
-- Crear una reserva con datos válidos.
-- Consultar una reserva por su ID.
-- Consultar identificadores inválidos e inexistentes.
-- Probar datos incorrectos y campos obligatorios.
-- Filtrar las reservas por sala.
-- Comprobar las respuestas cuando se envían parámetros repetidos.
-
-También comprobé la persistencia: una reserva guardada en MongoDB Atlas continúa disponible después de reiniciar el servidor.
-
-## 8. Persistencia y límites
-
-En el TP 07, las reservas del sitio se guardaban en memoria, por lo que se perdían al reiniciar el servidor.
-
-En el TP 08, el sitio y la API utilizan MongoDB Atlas mediante Mongoose. Por eso, las reservas quedan guardadas en la base de datos.
-
-Las validaciones comprueban los campos obligatorios, las salas y los turnos permitidos, el email y la cantidad de personas, que debe ser un número entero entre 1 y 6.
-
-El proyecto no implementa autenticación ni operaciones para modificar o eliminar reservas. Tampoco controla los posibles solapamientos de horarios o las reservas duplicadas.
-
-## 9. Evidencias
-
-## 9. Evidencias
-
-## 9. Evidencias
-
-Para comprobar el funcionamiento del proyecto, realicé estas pruebas:
-
-- Consulta de todas las reservas.
-- Búsqueda de reservas por sala, incluyendo una sala sin reservas.
-- Consulta de una reserva por su ID.
-- Registro de nuevas reservas.
-- Pruebas con datos incorrectos para comprobar las validaciones.
-
-Con estas pruebas comprobé que las consultas y el registro de reservas funcionan correctamente.
-
-Estas evidencias permiten mostrar la creación y consulta de reservas, las respuestas de error y la persistencia de los datos después de reiniciar el servidor.
-
-No se incluyen contraseñas, credenciales ni el archivo `.env`.
-
-## 10. Conclusión
-
-Con este práctico aprendí a conectar la aplicación con MongoDB Atlas y a trabajar con reservas persistentes. También incorporé una API JSON para consultar y crear registros desde Postman.
-
-Aunque todavía estoy aprendiendo a comprender mejor la organización por capas y el funcionamiento de las operaciones asíncronas, este trabajo me permitió avanzar en la separación del código y en el manejo de datos almacenados en una base de datos.
